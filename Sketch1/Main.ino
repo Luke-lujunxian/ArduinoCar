@@ -19,6 +19,9 @@ uint8_t echoPing = 0 ;
 uint8_t echoPong = 1;
 
 int fireNoice, soundNoice;
+int pointPass = 0;//已经过的点数
+
+const int timeFor360 = 10;//旋转一圈需要的秒数
 
 
 void setup()
@@ -85,6 +88,14 @@ int getDistance()//from CSDN
 	}//如果距离小于50厘米小灯熄灭
 	else
 		return distance;
+}
+
+int taskCheck() {
+	time_t initial = time(NULL);
+	while (difftime(time(NULL),initial) <= 1.2 * timeFor360) {
+
+	}
+	return 0;
 }
 
 

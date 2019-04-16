@@ -4,6 +4,7 @@
  Author:	Junxian Lu
 */
 #include <time.h>
+#include <MsTimer2-1.1.0/MsTimer2.h>
 
 
 /*
@@ -14,23 +15,31 @@ uint8_t fireReadFront = A0;
 uint8_t fireReadLeft = A1;
 uint8_t fireReadRight = A2;
 uint8_t soundRead = A3;
-uint8_t traceReadFront = A4;
-uint8_t echoPing = 0 ;
-uint8_t echoPong = 1;
+uint8_t traceReadFront = A4; 
 
-int fireNoice, soundNoice;
+uint8_t echoPing = 0;
+uint8_t echoPong = 1;
+uint8_t traceLeft = 2;
+uint8_t traceRight = 3;
+
+int fireNoice, soundNoice, black;
+
 int pointPass = 0;//已经过的点数
+int taskList[4] = { 1,2,3,4 };
 
 const int timeFor360 = 10;//旋转一圈需要的秒数
-
+const int traceError = 200;//前循迹头容差
 
 void setup()
 {
 	fireNoice = SensorInitializer(fireReadFront);
 	soundNoice = SensorInitializer(soundRead);
+	black = SensorInitializer(traceReadFront);
+	pinMode(echoPong, INPUT);
+	pinMode(echoPing, OUTPUT);
 	//声控启动
 	while (true) {
-		if (analogRead(A0) - soundNoice >= 10 || analogRead(A0) - soundNoice <= -10) {
+		if (analogRead(soundRead) - soundNoice >= 10 || analogRead(soundRead) - soundNoice <= -10) {
 			Serial.println("Pass");
 			break;
 		}		
@@ -57,6 +66,11 @@ void loop()
 	}
 	
 	*/
+	if (analogRead(traceReadFront) < black - traceError) {
+		taskSelect();
+
+		pointPass++;
+	}
 	
 }
 
@@ -90,12 +104,75 @@ int getDistance()//from CSDN
 		return distance;
 }
 
-int taskCheck() {
-	time_t initial = time(NULL);
-	while (difftime(time(NULL),initial) <= 1.2 * timeFor360) {
+bool timeout = false;
 
-	}
-	return 0;
+int taskSelect() {
+	MsTimer2::set(10, timeOut);
+	switch (taskList[pointPass]){
+		case 0: {
+			//灭火
+			MsTimer2::start();
+
+			while (!isFire(fireReadFront)) {
+				if (isFire(fireReadLeft))
+				{
+					//左转
+					while (!isFire(fireReadFront)) {
+						if (timeout)
+							goto reset;
+					}
+					/*停止*/
+				}
+				else if (isFire(fireReadRight))
+				{
+					//右转
+					while (!isFire(fireReadFront)) { 
+						if (timeout)
+							goto reset;
+					}
+					/*停止*/
+				}
+				else {
+					//右转
+					while (!isFire(fireReadFront)) {
+						if (timeout)
+							goto reset;
+					}
+
+				}
+			}
+
+			//开始灭火
+
+			MsTimer2::stop();
+		reset:
+			//车辆复位
+			break;
+		}
+		case 1: {
+			//投掷
+			break;
+		}
+		case 2: {
+			//打击
+		}
+		default:
+		
+			break;
+		}
+		out:Serial.println("Time Out!");
+}
+
+bool isFire(uint8_t port) {
+	if (analogRead(port) - fireNoice > 10 || analogRead(port) - fireNoice < -10)
+		return true;
+	else
+		return false;
+}
+
+void timeOut() {
+	//复位
+	timeout = true;
 }
 
 

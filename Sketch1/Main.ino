@@ -123,15 +123,6 @@ int taskSelect() {
 					}
 					/*мёж╧*/
 				}
-				else if (isFire(fireReadRight))
-				{
-					//срв╙
-					while (!isFire(fireReadFront)) { 
-						if (timeout)
-							goto reset;
-					}
-					/*мёж╧*/
-				}
 				else {
 					//срв╙
 					while (!isFire(fireReadFront)) {

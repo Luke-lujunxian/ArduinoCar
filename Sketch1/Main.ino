@@ -17,12 +17,14 @@ uint8_t soundRead = A3;
 uint8_t traceReadFront = A4;
 uint8_t echoPing = 0 ;
 uint8_t echoPong = 1;
+uint8_t transportRead = 2;
+uint8_t obstacleRead = 3;
 
 int fireNoice, soundNoice;
 int pointPass = 0;//已经过的点数
 
 const int timeFor360 = 10;//旋转一圈需要的秒数
-
+const int FORWARD = 0, LEFT = 1, RIGHT = 2;//小车向前，向左，向右移动
 
 void setup()
 {
@@ -30,7 +32,7 @@ void setup()
 	soundNoice = SensorInitializer(soundRead);
 	//声控启动
 	while (true) {
-		if (analogRead(A0) - soundNoice >= 10 || analogRead(A0) - soundNoice <= -10) {
+		if (analogRead(A3) - soundNoice >= 10 || analogRead(A3) - soundNoice <= -10) {
 			Serial.println("Pass");
 			break;
 		}		
@@ -57,6 +59,7 @@ void loop()
 	}
 	
 	*/
+
 	
 }
 
@@ -96,6 +99,10 @@ int taskCheck() {
 
 	}
 	return 0;
+}
+
+int move(int direction) {
+
 }
 
 

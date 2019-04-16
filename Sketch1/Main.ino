@@ -22,9 +22,17 @@ uint8_t echoPong = 1;
 uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 
+uint8_t transportRead = 4;
+uint8_t obstacleReadLeft = 5;
+uint8_t obstacleReadFront = 6;
+uint8_t motor1;
+uint8_t motor2;
+
+const int FORWARD = 0, LEFT = 1, RIGHT = 2;
+const int WHITE, BLACK;
 int fireNoice, soundNoice, black;
 
-int pointPass = 0;//已经过的点数
+int pointPass = 0,linePass=0;//已经过的点数
 int taskList[4] = { 1,2,3,4 };
 
 const int timeFor360 = 10;//旋转一圈需要的秒数
@@ -162,8 +170,28 @@ bool isFire(uint8_t port) {
 }
 
 void timeOut() {
-	//复位
 	timeout = true;
+}
+
+void reset(int h) {//h表示之前小车向左还是向右
+	int trace,movedirection;
+	if (h == RIGHT) {
+		trace = traceRight;
+		movedirection = LEFT;
+	}
+	else {
+		trace = traceLeft;
+		movedirection = RIGHT;
+	}
+	while(linePass){
+		int state1=digitalRead(trace);
+		move(movedirection);
+		if (digitalRead(trace) - state1 == WHITE - BLACK) 
+			--linePass;
+	}
+}
+void move(int h) {
+	
 }
 
 

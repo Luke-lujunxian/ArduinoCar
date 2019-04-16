@@ -44,7 +44,10 @@ void setup()
 	soundNoice = SensorInitializer(soundRead);
 	black = SensorInitializer(traceReadFront);
 	pinMode(echoPong, INPUT);
-	pinMode(echoPing, OUTPUT);
+	pinMode(echoPing, OUTPUT); 
+	pinMode(transportRead, INPUT);
+	pinMode(obstacleReadLeft, INPUT);
+	pinMode(obstacleReadFront, INPUT);
 	//Éù¿ØÆô¶¯
 	while (true) {
 		if (analogRead(soundRead) - soundNoice >= 10 || analogRead(soundRead) - soundNoice <= -10) {

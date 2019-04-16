@@ -23,10 +23,14 @@ uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 
 uint8_t transportRead = 4;
-uint8_t obstacleReadLeft = 5;
-uint8_t obstacleReadFront = 6;
-uint8_t motor1;
-uint8_t motor2;
+uint8_t obstacleReadLeft = 10;//5占用
+uint8_t obstacleReadFront = 12;//6占用
+uint8_t ENA = 6;
+uint8_t ENB = 5;
+uint8_t N1 = 11;
+uint8_t N2 = 9;
+uint8_t N3 = 8;
+uint8_t N4 = 7;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2;
 const int WHITE, BLACK;
@@ -194,7 +198,9 @@ void reset(int h) {//h表示之前小车向左还是向右
 	}
 }
 void move(int h) {
-	
+	/*
+		
+	*/
 }
 
 

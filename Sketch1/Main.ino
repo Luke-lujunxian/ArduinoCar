@@ -167,7 +167,14 @@ int taskSelect() {
 			}
 
 			//开始灭火
-
+			digitalWrite(11, HIGH);
+			digitalWrite(9, HIGH);
+			delay(2000);
+			digitalWrite(8, HIGH);
+			digitalWrite(7, HIGH);
+			while (isFire(fireReadFront)){}
+			digitalWrite(8, LOW);
+			digitalWrite(7, LOW);
 			MsTimer2::stop();
 		reset:
 			//车辆复位

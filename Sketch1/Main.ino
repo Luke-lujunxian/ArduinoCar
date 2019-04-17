@@ -23,7 +23,7 @@ uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 
 uint8_t transportRead = 4;
-uint8_t obstacleReadLeft = 10;//5占用
+uint8_t obstacleReadRight = 10;//5占用
 uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
 uint8_t ENB = 5;
@@ -32,7 +32,7 @@ uint8_t N2 = 9;
 uint8_t N3 = 8;
 uint8_t N4 = 7;
 
-const int FORWARD = 0, LEFT = 1, RIGHT = 2;
+const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5;
 const int WHITE, BLACK;
 int fireNoice, soundNoice, black;
 
@@ -50,7 +50,7 @@ void setup()
 	pinMode(echoPong, INPUT);
 	pinMode(echoPing, OUTPUT); 
 	pinMode(transportRead, INPUT);
-	pinMode(obstacleReadLeft, INPUT);
+	pinMode(obstacleReadRight, INPUT);
 	pinMode(obstacleReadFront, INPUT);
 	//声控启动
 	while (true) {
@@ -62,8 +62,6 @@ void setup()
 }
 void loop()
 {	
-	
-
 	/*
 	声音传感器测试
 	if(analogRead(A0) - average >= 10 || analogRead(A0) - average <= -10)
@@ -81,6 +79,26 @@ void loop()
 	}
 	
 	*/
+
+	//循迹
+	if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
+		move(RIGHT, 0.5);
+	}
+	else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
+		move(LEFT, 0.5);
+	}
+	else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
+		//未知情况解决
+		move(BACKWARD, 0);
+	}
+	else {
+		move(FORWARD, 0.8);
+	}
+
+	//避障
+	obsoleteAvoid();
+
+
 	if (analogRead(traceReadFront) < black - traceError) {
 		taskSelect();
 
@@ -192,15 +210,53 @@ void reset(int h) {//h表示之前小车向左还是向右
 	}
 	while(linePass){
 		int state1=digitalRead(trace);
-		move(movedirection);
+		move(movedirection, 0.8);
 		if (digitalRead(trace) - state1 == WHITE - BLACK) 
 			--linePass;
 	}
 }
-void move(int h) {
+void move(int h, float speedRate) {
 	/*
 		
 	*/
+}
+
+void obsoleteAvoid() {
+	if (digitalRead(obstacleReadFront) && getDistance() < 10) {
+		time_t temp = time(NULL);
+		int timePass = 0;
+		move(TURNLEFT, 0.8);
+		while (true) {
+			if (!digitalRead(obstacleReadFront) && digitalRead(obstacleReadRight))
+				break;
+		}
+		short turningTime = difftime(time(NULL), temp);
+		move(FORWARD, 0.8);
+		while (true) {
+			if (!digitalRead(obstacleReadRight))
+				break;
+		}
+		short fowTime = difftime(time(NULL), temp) - turningTime;
+
+		temp = time(NULL);
+		while (difftime(time(NULL), temp) < turningTime * 2)
+		{
+			move(TURNRIGHT, 0.8);
+		}
+		while (difftime(time(NULL), temp) - turningTime * 2 < fowTime) {
+			move(FORWARD, 0.8);
+			if (analogRead(traceReadFront) < black - traceError) {
+				move(TURNLEFT, 0.8);
+				break;
+			}
+		}
+		while (!digitalRead(traceRight) && !digitalRead(traceLeft))
+		{
+			if (digitalRead(traceRight) && !digitalRead(traceLeft))
+				move(TURNLEFT, 0.5);
+		}
+		move(FORWARD, 0);
+	}
 }
 
 

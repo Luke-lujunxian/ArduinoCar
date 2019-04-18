@@ -5,6 +5,7 @@
 */
 #include <time.h>
 #include <MsTimer2-1.1.0/MsTimer2.h>
+#include <Servo.h>
 
 
 /*
@@ -44,6 +45,7 @@ const int rotationspeed = 360 / timeFor360;
 int transportpoint;//第几个点遇到木块
 int angle;//每次要转的角度
 int speed;//小车FOWRAD速度为0.8时的速度
+Servo a;
 
 void setup()
 {
@@ -63,6 +65,7 @@ void setup()
 	digitalWrite(N2, LOW);
 	digitalWrite(N3,LOW);
 	digitalWrite(N4, LOW);
+	a.attach(10);
 
 	//声控启动
 	while (true) {
@@ -215,9 +218,23 @@ int taskSelect() {
 			while (true) {
 				if (getDistance() == 50)
 					move(TURNLEFT, 0.5);
-				if(traccLeft)
-
+				if (traceLeft == BLACK) {
+					delay(1);
+					if (traceLeft == WHITE) {
+						pointPass++;
+					}
+				}
 			}
+			move(STOP, 0);
+			int previousdistance = getDistance();
+			move(FORWARD, 0.3);
+			while (getDistance() > 5);
+			move(STOP, 0);
+			a.write(90);
+			delay(100);
+			a.write(0);
+			move(BACKWARD, 0.3);
+			while (getDistance() < previousdistance);
 			break;
 		}
 		case 2: {
@@ -352,6 +369,7 @@ void obsoleteAvoid() {
 	}
 }
 void transport() {
+	int carlength=0;//轮子中心到车头的距离
 	if (transportpoint == 2) {
 		move(TURNRIGHT, 0.5);
 		delay(angle / rotationspeed);

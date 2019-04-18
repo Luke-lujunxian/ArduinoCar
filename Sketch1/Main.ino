@@ -47,6 +47,7 @@ int speed;//小车FOWRAD速度为0.8时的速度
 
 void setup()
 {
+	pinMode(soundRead, INPUT);
 	fireNoice = SensorInitializer(fireReadFront);
 	soundNoice = SensorInitializer(soundRead);
 	black = SensorInitializer(traceReadFront);
@@ -112,7 +113,6 @@ void loop()
 	//颜色点
 	if (analogRead(traceReadFront) < black - traceError) {
 		taskSelect();
-
 		pointPass++;
 	}
 	
@@ -156,28 +156,37 @@ int taskSelect() {
 		case 0: {
 			//灭火
 			MsTimer2::start();
+			int leftTime = 0;
 			int movedirection;
 
 			while (!isFire(fireReadFront)) {
 				if (isFire(fireReadLeft))
 				{
-					//左转
+					move(TURNLEFT, 0.8);
+					time_t temp = time(NULL);
 					while (!isFire(fireReadFront)) {
-						if (timeout)
+						if (timeout) {
+							leftTime = difftime(time(NULL), temp);
 							goto reset;
+						}		
 					}
+					leftTime = difftime(time(NULL), temp);
 					/*停止*/
 				}
 				else {
 					//右转
+					move(TURNRIGHT, 0.8);
+					time_t temp = time(NULL);
 					while (!isFire(fireReadFront)) {
-						if (timeout)
+						if (timeout) {
+							leftTime -= difftime(time(NULL), temp);
 							goto reset;
+						}
 					}
-
+					leftTime -= difftime(time(NULL), temp);
 				}
 			}
-
+			move(STOP, 0);
 			//开始灭火
 			digitalWrite(11, HIGH);
 			digitalWrite(9, HIGH);
@@ -190,6 +199,15 @@ int taskSelect() {
 			MsTimer2::stop();
 		reset:
 			//复位
+			time_t temp = time(NULL);
+			while (leftTime < 0 && difftime(time(NULL), temp) < -leftTime)
+			{
+				move(TURNLEFT, 0.8);
+			}
+			while (leftTime > 0 && difftime(time(NULL), temp) < leftTime)
+			{
+				move(TURNRIGHT, 0.8);
+			}
 			break;
 		}
 		case 1: {

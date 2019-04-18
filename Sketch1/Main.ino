@@ -5,6 +5,7 @@
 */
 #include <time.h>
 #include <MsTimer2-1.1.0/MsTimer2.h>
+#include <Servo.h>
 
 
 /*
@@ -22,7 +23,7 @@ uint8_t echoPong = 1;
 uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 
-uint8_t obstacleReadRight = 10;//5占用
+uint8_t obstacleReadRight = 4;//5占用
 uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
 uint8_t ENB = 5;
@@ -30,6 +31,7 @@ uint8_t N1 = 11;
 uint8_t N2 = 9;
 uint8_t N3 = 8;
 uint8_t N4 = 7;
+uint8_t hit = 1;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
@@ -44,6 +46,7 @@ const int rotationspeed = 360 / timeFor360;
 int transportpoint;//第几个点遇到木块
 int angle;//每次要转的角度
 int speed;//小车FOWRAD速度为0.8时的速度
+Servo a;
 
 void setup()
 {
@@ -63,6 +66,7 @@ void setup()
 	digitalWrite(N2, LOW);
 	digitalWrite(N3,LOW);
 	digitalWrite(N4, LOW);
+	a.attach(10);
 
 	//声控启动
 	while (true) {
@@ -213,9 +217,57 @@ int taskSelect() {
 		}
 		case 1: {
 			//投掷
+			linePass = 0;
+			while (true) {
+				if (getDistance() == 50)
+					move(TURNLEFT, 0.5);
+				if (traceLeft == BLACK) {
+					delay(1);
+					if (traceLeft == WHITE) {
+						linePass++;
+					}
+				}
+			}
+			move(STOP, 0);
+			int previousdistance = getDistance();
+			move(FORWARD, 0.3);
+			while (getDistance() > 5);
+			move(STOP, 0);
+			a.write(90);
+			delay(100);
+			a.write(0);
+			move(BACKWARD, 0.3);
+			while (getDistance() < previousdistance);
+			move(STOP, 0);
+			reset(LEFT);
 			break;
 		}
 		case 2: {
+			linePass = 0;
+			while (true) {
+				if (getDistance() == 50)
+					move(TURNLEFT, 0.5);
+				if (traceLeft == BLACK) {
+					delay(1);
+					if (traceLeft == WHITE) {
+						linePass++;
+					}
+				}
+			}
+			move(STOP, 0);
+			int previousdistance = getDistance();
+			move(FORWARD, 0.3);
+			while (getDistance() > 5);
+			move(STOP, 0);
+			for (int i = 0; i < 180; i += 30) {
+				a.write(i);
+				if (digitalRead(hit) == 1) break;
+			}
+			move(BACKWARD, 0.3);
+			while (getDistance() < previousdistance);
+			move(STOP, 0);
+			reset(LEFT);
+			break;
 			//打击
 		}
 		default:
@@ -347,6 +399,7 @@ void obsoleteAvoid() {
 	}
 }
 void transport() {
+	int carlength=0;//轮子中心到车头的距离
 	if (transportpoint == 2) {
 		move(TURNRIGHT, 0.5);
 		delay(angle / rotationspeed);

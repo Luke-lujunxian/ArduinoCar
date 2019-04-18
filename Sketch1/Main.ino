@@ -109,7 +109,7 @@ void loop()
 	//避障
 	obsoleteAvoid();
 
-
+	//颜色点
 	if (analogRead(traceReadFront) < black - traceError) {
 		taskSelect();
 
@@ -156,6 +156,7 @@ int taskSelect() {
 		case 0: {
 			//灭火
 			MsTimer2::start();
+			int movedirection;
 
 			while (!isFire(fireReadFront)) {
 				if (isFire(fireReadLeft))
@@ -188,7 +189,7 @@ int taskSelect() {
 			digitalWrite(7, LOW);
 			MsTimer2::stop();
 		reset:
-			//车辆复位
+			//复位
 			break;
 		}
 		case 1: {
@@ -330,14 +331,42 @@ void transport() {
 	if (transportpoint == 2) {
 		move(TURNRIGHT, 0.5);
 		delay(angle / rotationspeed);
-		move(FORWARD, 0.8);
-		delay(carlength / speed);
+		for (int i = carlength / speed; i > 0; i--) {
+			if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
+				move(RIGHT, 0.5);
+			}
+			else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
+				move(LEFT, 0.5);
+			}
+			else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
+				//未知情况解决
+				move(BACKWARD, 0);
+			}
+			else {
+				move(FORWARD, 0.8);
+			}
+			delay(1000);
+		}
 		move(TURNRIGHT, 0.5);
+		delay(100);
 		while (true) {
-			delay(100);
 			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-				move(BACKWARD, 0.8);
-				delay(4 / speed);
+				for (int i = 4 / speed; i > 0; i--) {
+					if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
+						move(RIGHT, 0.5);
+					}
+					else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
+						move(LEFT, 0.5);
+					}
+					else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
+						//未知情况解决
+						move(BACKWARD, 0);
+					}
+					else {
+						move(BACKWARD, 0.8);
+					}
+					delay(1000);
+				}
 				move(TURNLEFT, 0.5);
 				delay(100);
 				while (true) {

@@ -472,18 +472,32 @@ void transport() {
 		delay(100);
 		while (true) {
 			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-				move(FORWARD, 0.8);
-				while (true) {
-					if (digitalRead(traceReadFront) != BLACK) {
+				if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
+					move(RIGHT, 0.5);
+				}
+				else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
+					move(LEFT, 0.5);
+				}
+				else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
+					//未知情况解决
+					move(BACKWARD, 0);
+				}
+				else {
+					move(FORWARD, 0.8);
+				}
+				if (digitalRead(traceReadFront != BLACK)) {
+					move(TURNRIGHT, 0.5);
+					delay(timeFor360 / 2);
+					move(FORWARD, 0.8);
+					delay(carlength / speed);
+					move(TURNRIGHT, 0.5);
+					if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
 						move(BACKWARD, 0.8);
-						delay((4 + carlength) / speed);
+						delay(4 / speed);
 						move(TURNRIGHT, 0.5);
-						delay(100);
-						while (true) {
-							if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-								move(STOP, 0);
-								return;
-							}
+						if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
+							move(STOP, 0);
+							return;
 						}
 					}
 				}

@@ -136,6 +136,23 @@ void loop()
 		move(STOP, 0);
 		taskSelect();
 		pointPass++;
+		if (pointPass == 1) {
+			move(TURNRIGHT, 0.8);
+			while(!digitalRead(traceRight)){}
+			move(TURNRIGHT, 0.5);
+			while (!digitalRead(traceLeft)) {}
+			move(STOP, 0);
+			move(BACKWARD, 0.7);
+			delay(3000);
+			move(TURNRIGHT, 0.8);
+			delay(2000);
+			while (!digitalRead(traceRight)) {}
+			move(TURNRIGHT, 0.5);
+			while (!digitalRead(traceLeft)) {}
+		}
+		else if(pointPass == 4){
+			move(STOP,0);
+		}
 	}
 	
 }

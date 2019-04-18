@@ -13,19 +13,19 @@
 uint8_t 用途 + R/W  = 端口名
 */
 uint8_t fireReadFront = A0;
-uint8_t fireReadLeft = A1;
-uint8_t fireReadRight = A2;
-uint8_t soundRead = A3;
-uint8_t traceReadFront = A4; 
+uint8_t fireReadLeft = A2;
+uint8_t fireReadRight = A1;
+uint8_t soundRead = A4;
+uint8_t traceReadFront = A3; 
 
-uint8_t echoPing = 0;
-uint8_t echoPong = 1;
+uint8_t echoPing = A5;
+uint8_t echoPong = 4;
 uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 uint8_t LED = echoPong;//共用端口
 uint8_t FAN = soundRead;
 
-uint8_t obstacleReadRight = 4;//5占用
+uint8_t obstacleReadRight = 13;//5占用
 uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
 uint8_t ENB = 5;
@@ -33,14 +33,14 @@ uint8_t N1 = 11;
 uint8_t N2 = 9;
 uint8_t N3 = 8;
 uint8_t N4 = 7;
-uint8_t hit = 1;
+uint8_t hit = echoPong;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
 int fireNoice, soundNoice, black;
 
 int pointPass = 0,linePass=0;//已经过的点数
-int taskList[4] = { 1,2,3,4 };
+int taskList[4] = { -1,-1,-1,-1 };
 
 const int timeFor360 = 10;//旋转一圈需要的秒数
 const int traceError = 200;//前循迹头容差
@@ -94,7 +94,9 @@ void setup()
 }
 void loop()
 {	
-
+	while (true) {
+		move(FORWARD, 0.5);
+	}
 	/*
 	声音传感器测试
 	if(analogRead(A0) - average >= 10 || analogRead(A0) - average <= -10)

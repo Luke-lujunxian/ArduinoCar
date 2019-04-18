@@ -22,6 +22,8 @@ uint8_t echoPing = 0;
 uint8_t echoPong = 1;
 uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
+uint8_t LED = echoPong;//共用端口
+uint8_t FAN = soundRead;
 
 uint8_t obstacleReadRight = 4;//5占用
 uint8_t obstacleReadFront = 12;//6占用
@@ -51,13 +53,26 @@ Servo a;
 void setup()
 {
 	pinMode(soundRead, INPUT);
+
+	pinMode(LED, OUTPUT);
+	digitalWrite(LED, HIGH);
 	fireNoice = SensorInitializer(fireReadFront);
 	soundNoice = SensorInitializer(soundRead);
 	black = SensorInitializer(traceReadFront);
+	digitalWrite(LED, LOW);
+
+
 	pinMode(echoPong, INPUT);
 	pinMode(echoPing, OUTPUT); 
 	pinMode(obstacleReadRight, INPUT);
 	pinMode(obstacleReadFront, INPUT);
+	pinMode(fireReadFront, INPUT);
+	pinMode(fireReadLeft, INPUT);
+	pinMode(fireReadRight, INPUT);
+	pinMode(traceLeft, INPUT);
+	pinMode(traceRight, INPUT);
+	pinMode(traceReadFront, INPUT);
+
 	pinMode(N1, OUTPUT);
 	pinMode(N2, OUTPUT);
 	pinMode(N3, OUTPUT);
@@ -67,7 +82,7 @@ void setup()
 	digitalWrite(N3,LOW);
 	digitalWrite(N4, LOW);
 	a.attach(10);
-
+	Serial.println("Ini complete");
 	//声控启动
 	while (true) {
 		if (analogRead(soundRead) - soundNoice >= 10 || analogRead(soundRead) - soundNoice <= -10) {
@@ -75,9 +90,11 @@ void setup()
 			break;
 		}		
 	}
+	pinMode(FAN, OUTPUT);
 }
 void loop()
 {	
+
 	/*
 	声音传感器测试
 	if(analogRead(A0) - average >= 10 || analogRead(A0) - average <= -10)
@@ -156,7 +173,7 @@ int getDistance()//from CSDN
 bool timeout = false;
 
 int taskSelect() {
-	MsTimer2::set(10, timeOut);
+	MsTimer2::set(12, timeOut);
 	switch (taskList[pointPass]){
 		case 0: {
 			//灭火
@@ -193,14 +210,12 @@ int taskSelect() {
 			}
 			move(STOP, 0);
 			//开始灭火
-			digitalWrite(11, HIGH);
-			digitalWrite(9, HIGH);
+			digitalWrite(LED, HIGH);
 			delay(2000);
-			digitalWrite(8, HIGH);
-			digitalWrite(7, HIGH);
+			digitalWrite(LED, LOW);
+			digitalWrite(FAN, HIGH);
 			while (isFire(fireReadFront)){}
-			digitalWrite(8, LOW);
-			digitalWrite(7, LOW);
+			digitalWrite(FAN, LOW);
 			MsTimer2::stop();
 		reset:
 			//复位

@@ -523,11 +523,17 @@ void transport() {
 	}
 }
 
-void LEDlight(int ms) {//×è¶ÏÐÔ
-	pinMode(LED, OUTPUT);
-	digitalWrite(LED, HIGH);
-	delay(ms);
-	digitalWrite(LED, LOW);
-	pinMode(LED, INPUT);
+void LEDlight(bool s) {//×è¶ÏÐÔ
+	if (s) {
+		pinMode(LED, OUTPUT);
+		digitalWrite(LED, HIGH);
+	}
+	else {
+		digitalWrite(LED, LOW);
+		pinMode(LED, INPUT);
+	}
+	
+	
+	
 }
 

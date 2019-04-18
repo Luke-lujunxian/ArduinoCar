@@ -112,6 +112,7 @@ void loop()
 
 	//ÑÕÉ«µã
 	if (analogRead(traceReadFront) < black - traceError) {
+		move(STOP, 0);
 		taskSelect();
 		pointPass++;
 	}

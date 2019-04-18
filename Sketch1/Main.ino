@@ -212,6 +212,12 @@ int taskSelect() {
 		}
 		case 1: {
 			//Õ∂÷¿
+			while (true) {
+				if (getDistance() == 50)
+					move(TURNLEFT, 0.5);
+				if(traccLeft)
+
+			}
 			break;
 		}
 		case 2: {

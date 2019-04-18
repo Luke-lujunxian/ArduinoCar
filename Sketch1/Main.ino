@@ -22,7 +22,6 @@ uint8_t echoPong = 1;
 uint8_t traceLeft = 2;
 uint8_t traceRight = 3;
 
-uint8_t transportRead = 4;
 uint8_t obstacleReadRight = 10;//5占用
 uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
@@ -32,7 +31,7 @@ uint8_t N2 = 9;
 uint8_t N3 = 8;
 uint8_t N4 = 7;
 
-const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5;
+const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
 int fireNoice, soundNoice, black;
 
@@ -41,6 +40,10 @@ int taskList[4] = { 1,2,3,4 };
 
 const int timeFor360 = 10;//旋转一圈需要的秒数
 const int traceError = 200;//前循迹头容差
+const int rotationspeed = 360 / timeFor360;
+int transportpoint;//第几个点遇到木块
+int angle;//每次要转的角度
+int speed;//小车FOWRAD速度为0.8时的速度
 
 void setup()
 {
@@ -49,9 +52,17 @@ void setup()
 	black = SensorInitializer(traceReadFront);
 	pinMode(echoPong, INPUT);
 	pinMode(echoPing, OUTPUT); 
-	pinMode(transportRead, INPUT);
 	pinMode(obstacleReadRight, INPUT);
 	pinMode(obstacleReadFront, INPUT);
+	pinMode(N1, OUTPUT);
+	pinMode(N2, OUTPUT);
+	pinMode(N3, OUTPUT);
+	pinMode(N4, OUTPUT);
+	digitalWrite(N1, LOW);
+	digitalWrite(N2, LOW);
+	digitalWrite(N3,LOW);
+	digitalWrite(N4, LOW);
+
 	//声控启动
 	while (true) {
 		if (analogRead(soundRead) - soundNoice >= 10 || analogRead(soundRead) - soundNoice <= -10) {
@@ -223,9 +234,59 @@ void reset(int h) {//h表示之前小车向左还是向右
 	}
 }
 void move(int h, float speedRate) {
-	/*
-		
-	*/
+	switch (h)
+	{
+	case FORWARD:
+		digitalWrite(N1, HIGH);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, HIGH);
+		digitalWrite(N4, LOW);
+		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+		break;
+	case RIGHT:
+		digitalWrite(N1, HIGH);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, HIGH);
+		digitalWrite(N4, LOW);
+		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate/2,0, 1, 0, 255)));
+	case LEFT:
+		digitalWrite(N1, HIGH);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, HIGH);
+		digitalWrite(N4, LOW);
+		analogWrite(ENA, (int)(map(speedRate/2,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+	case TURNRIGHT:
+		digitalWrite(N1, HIGH);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, LOW);
+		digitalWrite(N4, HIGH);
+		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+	case TURNLEFT:
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
+		digitalWrite(N3, HIGH);
+		digitalWrite(N4, LOW);
+		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+	case BACKWARD:
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
+		digitalWrite(N3, LOW);
+		digitalWrite(N4, HIGH);
+		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+	case STOP:
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, LOW);
+		digitalWrite(N4, LOW);
+	default:
+		break;
+	}
 }
 
 void obsoleteAvoid() {
@@ -262,7 +323,56 @@ void obsoleteAvoid() {
 			if (digitalRead(traceRight) && !digitalRead(traceLeft))
 				move(TURNLEFT, 0.5);
 		}
-		move(FORWARD, 0);
+		move(STOP, 0);
+	}
+}
+void transport() {
+	if (transportpoint == 2) {
+		move(TURNRIGHT, 0.5);
+		delay(angle / rotationspeed);
+		move(FORWARD, 0.8);
+		delay(carlength / speed);
+		move(TURNRIGHT, 0.5);
+		while (true) {
+			delay(100);
+			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
+				move(BACKWARD, 0.8);
+				delay(4 / speed);
+				move(TURNLEFT, 0.5);
+				delay(100);
+				while (true) {
+					if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
+						move(STOP, 0);
+						return;
+					}
+				}
+			}
+		}
+	}
+	else if (transportpoint == 3) {
+		move(BACKWARD, 0.8);
+		delay(carlength / speed);
+		move(TURNRIGHT, 0.5);
+		delay(100);
+		while (true) {
+			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
+				move(FORWARD, 0.8);
+				while (true) {
+					if (digitalRead(traceReadFront) != BLACK) {
+						move(BACKWARD, 0.8);
+						delay((4 + carlength) / speed);
+						move(TURNRIGHT, 0.5);
+						delay(100);
+						while (true) {
+							if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
+								move(STOP, 0);
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 

@@ -394,7 +394,7 @@ void move(int h, float speedRate) {
 }
 
 void obsoleteAvoid() {
-	if (digitalRead(obstacleReadFront) && getDistance() < 10) {
+	if (digitalRead(obstacleReadFront) && getDistance() < 10 && digitalRead(traceReadFront)> black - traceError) {
 		time_t temp = time(NULL);
 		int timePass = 0;
 		move(TURNLEFT, 0.8);

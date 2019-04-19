@@ -77,6 +77,8 @@ void setup()
 	pinMode(N2, OUTPUT);
 	pinMode(N3, OUTPUT);
 	pinMode(N4, OUTPUT);
+	pinMode(ENA, OUTPUT);
+	pinMode(ENB, OUTPUT);
 	digitalWrite(N1, LOW);
 	digitalWrite(N2, LOW);
 	digitalWrite(N3,LOW);

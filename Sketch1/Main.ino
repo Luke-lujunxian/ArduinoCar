@@ -51,7 +51,7 @@ int speed;//小车FOWRAD速度为0.8时的速度
 Servo a;
 
 void setup()
-{
+{	
 	pinMode(soundRead, INPUT);
 
 	pinMode(LED, OUTPUT);
@@ -96,8 +96,22 @@ void setup()
 }
 void loop()
 {	
+	
 	while (true) {
-		move(FORWARD, 0.5);
+		move(FORWARD, 0.8);
+		delay(1000);
+		move(RIGHT, 0.8);
+		delay(1000);
+		move(LEFT, 0.8);
+		delay(1000);
+		move(TURNRIGHT, 0.8);
+		delay(1000);
+		move(TURNLEFT, 0.8);
+		delay(1000);
+		move(BACKWARD, 0.8);
+		delay(1000);
+		move(STOP, 0.8);
+		delay(1000);
 	}
 	/*
 	声音传感器测试
@@ -345,48 +359,53 @@ void move(int h, float speedRate) {
 	switch (h)
 	{
 	case FORWARD:
-		digitalWrite(N1, HIGH);
-		digitalWrite(N2, LOW);
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENA, (int)(speedRate*255));
+		analogWrite(ENB, (int)(speedRate*255));
 		break;
 	case RIGHT:
-		digitalWrite(N1, HIGH);
-		digitalWrite(N2, LOW);
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate/2,0, 1, 0, 255)));
+		analogWrite(ENA, (int)(speedRate*255));
+		analogWrite(ENB, (int)(speedRate*255/2));
+		break;
 	case LEFT:
-		digitalWrite(N1, HIGH);
-		digitalWrite(N2, LOW);
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(map(speedRate/2,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENA, (int)(speedRate*255/2));
+		analogWrite(ENB, (int)(speedRate*255));
+		break;
 	case TURNRIGHT:
+		digitalWrite(N1, LOW);
+		digitalWrite(N2, HIGH);
+		digitalWrite(N3, LOW);
+		digitalWrite(N4, HIGH);
+		analogWrite(ENA, (int)(speedRate*255));
+		analogWrite(ENB, (int)(speedRate*255));
+		break;
+	case TURNLEFT:
+		digitalWrite(N1, HIGH);
+		digitalWrite(N2, LOW);
+		digitalWrite(N3, HIGH);
+		digitalWrite(N4, LOW);
+		analogWrite(ENA, (int)(speedRate*255));
+		analogWrite(ENB, (int)(speedRate*255));
+		break;
+	case BACKWARD:
 		digitalWrite(N1, HIGH);
 		digitalWrite(N2, LOW);
 		digitalWrite(N3, LOW);
 		digitalWrite(N4, HIGH);
-		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
-	case TURNLEFT:
-		digitalWrite(N1, LOW);
-		digitalWrite(N2, HIGH);
-		digitalWrite(N3, HIGH);
-		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
-	case BACKWARD:
-		digitalWrite(N1, LOW);
-		digitalWrite(N2, HIGH);
-		digitalWrite(N3, LOW);
-		digitalWrite(N4, HIGH);
-		analogWrite(ENA, (int)(map(speedRate,0, 1, 0, 255)));
-		analogWrite(ENB, (int)(map(speedRate,0, 1, 0, 255)));
+		analogWrite(ENA, (int)(speedRate*255));
+		analogWrite(ENB, (int)(speedRate*255));
+		break;
 	case STOP:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, LOW);

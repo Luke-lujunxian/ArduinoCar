@@ -96,29 +96,6 @@ void setup()
 }
 void loop()
 {	
-	
-	while (true) {
-		move(FORWARD, 0.8);
-		delay(1000);
-		move(RIGHT, 0.8);
-		delay(1000);
-		move(LEFT, 0.8);
-		delay(1000);
-		move(TURNRIGHT, 0.8);
-		delay(1000);
-		move(TURNLEFT, 0.8);
-		delay(1000);
-		move(BACKWARD, 0.8);
-		delay(1000);
-		move(STOP, 0);
-		delay(1000);
-		time_t temp = time(NULL);
-		move(TURNLEFT, 0.8);
-		delay(3000);
-		reset(LEFT, difftime(time(NULL), temp));
-		move(STOP, 0);
-		delay(2000);
-	}
 	/*
 	声音传感器测试
 	if(analogRead(A0) - average >= 10 || analogRead(A0) - average <= -10)
@@ -347,10 +324,10 @@ void timeOut() {
 void reset(int h,int time) {//h表示之前小车向左还是向右
 	int movedirection;
 	if (h == LEFT) {
-		movedirection = RIGHT;
+		movedirection = TURNRIGHT;
 	}
 	else {
-		movedirection = LEFT;
+		movedirection = TURNLEFT;
 	}
 	move(movedirection, 0.5);
 	delay(time);
@@ -390,14 +367,14 @@ void move(int h, float speedRate) {
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
 		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255/2));
+		analogWrite(ENB, (int)(speedRate*255*2/3));
 		break;
 	case LEFT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255/2));
+		analogWrite(ENA, (int)(speedRate*255*2/3));
 		analogWrite(ENB, (int)(speedRate*255));
 		break;
 	case TURNRIGHT:

@@ -110,8 +110,14 @@ void loop()
 		delay(1000);
 		move(BACKWARD, 0.8);
 		delay(1000);
-		move(STOP, 0.8);
+		move(STOP, 0);
 		delay(1000);
+		time_t temp = time(NULL);
+		move(TURNLEFT, 0.8);
+		delay(3000);
+		reset(LEFT, difftime(time(NULL), temp));
+		move(STOP, 0);
+		delay(2000);
 	}
 	/*
 	声音传感器测试
@@ -289,10 +295,11 @@ int taskSelect() {
 			move(BACKWARD, 0.3);
 			while (getDistance() < previousdistance);
 			move(STOP, 0);
-			reset(LEFT);
+			//reset(LEFT);
 			break;
 		}
 		case 2: {
+			//打击
 			linePass = 0;
 			while (true) {
 				if (getDistance() == 50)
@@ -316,9 +323,8 @@ int taskSelect() {
 			move(BACKWARD, 0.3);
 			while (getDistance() < previousdistance);
 			move(STOP, 0);
-			reset(LEFT);
+			//reset(LEFT);
 			break;
-			//打击
 		}
 		default:
 		
@@ -338,7 +344,18 @@ void timeOut() {
 	timeout = true;
 }
 
-void reset(int h) {//h表示之前小车向左还是向右
+void reset(int h,int time) {//h表示之前小车向左还是向右
+	int movedirection;
+	if (h == LEFT) {
+		movedirection = RIGHT;
+	}
+	else {
+		movedirection = LEFT;
+	}
+	move(movedirection, 0.5);
+	delay(time);
+
+	/*
 	int trace,movedirection;
 	if (h == RIGHT) {
 		trace = traceRight;
@@ -354,6 +371,7 @@ void reset(int h) {//h表示之前小车向左还是向右
 		if (digitalRead(trace) - state1 == WHITE - BLACK) 
 			--linePass;
 	}
+	*/
 }
 void move(int h, float speedRate) {
 	switch (h)

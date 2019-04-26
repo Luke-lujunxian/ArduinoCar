@@ -115,19 +115,7 @@ void loop()
 	*/
 
 	//循迹
-	if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
-		move(RIGHT, 0.5);
-	}
-	else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
-		move(LEFT, 0.5);
-	}
-	else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
-		//未知情况解决
-		move(BACKWARD, 0);
-	}
-	else {
-		move(FORWARD, 0.8);
-	}
+	findtrace();
 
 	//避障
 	obsoleteAvoid();
@@ -321,8 +309,8 @@ void timeOut() {
 	timeout = true;
 }
 
-void reset(int h,int time) {//h表示之前小车向左还是向右
-	int movedirection;
+void reset(int h/*,int time*/) {//h表示之前小车向左还是向右
+	/*int movedirection;
 	if (h == LEFT) {
 		movedirection = TURNRIGHT;
 	}
@@ -331,8 +319,8 @@ void reset(int h,int time) {//h表示之前小车向左还是向右
 	}
 	move(movedirection, 0.5);
 	delay(time);
-
-	/*
+	*/
+	
 	int trace,movedirection;
 	if (h == RIGHT) {
 		trace = traceRight;
@@ -348,7 +336,7 @@ void reset(int h,int time) {//h表示之前小车向左还是向右
 		if (digitalRead(trace) - state1 == WHITE - BLACK) 
 			--linePass;
 	}
-	*/
+	
 }
 void move(int h, float speedRate) {
 	switch (h)
@@ -453,91 +441,43 @@ void transport() {
 	if (transportpoint == 2) {
 		move(TURNRIGHT, 0.5);
 		delay(angle / rotationspeed);
+		move(FORWARD, 0.8);
+		while (digitalRead(traceLeft) != BLACK && digitalRead(traceRight) != BLACK);
 		for (int i = carlength / speed; i > 0; i--) {
-			if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
-				move(RIGHT, 0.5);
-			}
-			else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
-				move(LEFT, 0.5);
-			}
-			else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
-				//未知情况解决
-				move(BACKWARD, 0);
-			}
-			else {
-				move(FORWARD, 0.8);
-			}
+			findtrace();
 			delay(1000);
 		}
 		move(TURNRIGHT, 0.5);
 		delay(100);
 		while (true) {
 			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-				for (int i = 4 / speed; i > 0; i--) {
-					if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
-						move(RIGHT, 0.5);
-					}
-					else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
-						move(LEFT, 0.5);
-					}
-					else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
-						//未知情况解决
-						move(BACKWARD, 0);
-					}
-					else {
-						move(BACKWARD, 0.8);
-					}
-					delay(1000);
-				}
-				move(TURNLEFT, 0.5);
-				delay(100);
-				while (true) {
-					if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-						move(STOP, 0);
-						return;
-					}
-				}
+				move(STOP, 0);
+				return;
 			}
 		}
 	}
 	else if (transportpoint == 3) {
-		move(BACKWARD, 0.8);
-		delay(carlength / speed);
 		move(TURNRIGHT, 0.5);
-		delay(100);
-		while (true) {
-			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-				if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
-					move(RIGHT, 0.5);
-				}
-				else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
-					move(LEFT, 0.5);
-				}
-				else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
-					//未知情况解决
-					move(BACKWARD, 0);
-				}
-				else {
-					move(FORWARD, 0.8);
-				}
-				if (digitalRead(traceReadFront != BLACK)) {
-					move(TURNRIGHT, 0.5);
-					delay(timeFor360 / 2);
-					move(FORWARD, 0.8);
-					delay(carlength / speed);
-					move(TURNRIGHT, 0.5);
-					if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-						move(BACKWARD, 0.8);
-						delay(4 / speed);
-						move(TURNRIGHT, 0.5);
-						if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-							move(STOP, 0);
-							return;
-						}
-					}
-				}
-			}
+		delay(timeFor360 / 2);
+		move(FORWARD, 0.8);
+		delay(1000);
+		while (true) { 
+			findtrace(); 
+			if (analogRead(traceReadFront) < BLACK - traceError)
+				break;
 		}
+		move(TURNRIGHT, 0.5);
+		delay((180-angle)/rotationspeed);
+		move(FORWARD, 0.8);
+		while (digitalRead(traceLeft) != BLACK && digitalRead(traceRight) != BLACK);
+		for (int i = carlength / speed; i > 0; i--) {
+			findtrace();
+			delay(1000);
+		}
+		move(TURNRIGHT, 0.5);
+		delay(timeFor360/2);
+		if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK)
+			move(STOP, 0);
 	}
 }
 
@@ -553,5 +493,21 @@ void LEDlight(bool s) {//阻断性
 	
 	
 	
+}
+
+void findtrace() {
+	if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
+		move(RIGHT, 0.5);
+	}
+	else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
+		move(LEFT, 0.5);
+	}
+	else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
+		//未知情况解决
+		move(BACKWARD, 0);
+	}
+	else {
+		move(FORWARD, 0.8);
+	}
 }
 

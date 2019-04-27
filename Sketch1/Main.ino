@@ -354,6 +354,7 @@ void reset(int h/*,int time*/) {//h表示之前小车向左还是向右
 	while(linePass){
 		int state1=digitalRead(trace);
 		move(movedirection, 0.8);
+		delay(10);
 		if (digitalRead(trace) - state1 == WHITE - BLACK) 
 			--linePass;
 	}
@@ -376,14 +377,14 @@ void move(int h, float speedRate) {
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
 		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
-		analogWrite(ENB, (int)(speedRate*255*2/3 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255*0.85 * GLOBALSPEED));
 		break;
 	case LEFT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255*2/3 * GLOBALSPEED));
+		analogWrite(ENA, (int)(speedRate*255*0.85 * GLOBALSPEED));
 		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case TURNRIGHT:
@@ -463,7 +464,6 @@ void transport() {
 		move(TURNRIGHT, 0.5);
 		delay(angle / rotationspeed);
 		move(FORWARD, 0.8);
-		while (digitalRead(traceLeft) != BLACK && digitalRead(traceRight) != BLACK);
 		for (int i = carlength / speed; i > 0; i--) {
 			findtrace();
 			delay(1000);
@@ -471,34 +471,33 @@ void transport() {
 		move(TURNRIGHT, 0.5);
 		delay(100);
 		while (true) {
-			if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK) {
-				move(STOP, 0);
-				return;
-			}
+			if(digitalRead(traceLeft)==BLACK)
+				if (digitalRead(traceLeft) == WHITE) {
+					move(STOP, 0);
+					return;
+				}
 		}
 	}
 	else if (transportpoint == 3) {
 		move(TURNRIGHT, 0.5);
 		delay(timeFor360 / 2);
 		move(FORWARD, 0.8);
-		delay(1000);
 		while (true) { 
 			findtrace(); 
-			if (analogRead(traceReadFront) < BLACK - traceError)
+			if (analogRead(traceReadFront) < black_f - traceError)
 				break;
 		}
-		move(TURNRIGHT, 0.5);
+		move(TURNLEFT, 0.5);
 		delay((180-angle)/rotationspeed);
-		move(FORWARD, 0.8);
-		while (digitalRead(traceLeft) != BLACK && digitalRead(traceRight) != BLACK);
 		for (int i = carlength / speed; i > 0; i--) {
 			findtrace();
 			delay(1000);
 		}
 		move(TURNRIGHT, 0.5);
 		delay(timeFor360/2);
-		if (digitalRead(traceLeft) == BLACK && digitalRead(traceRight) == BLACK)
-			move(STOP, 0);
+		if (digitalRead(traceLeft) == BLACK)
+			if(digitalRead(traceLeft)==WHITE)
+				move(STOP, 0);
 	}
 }
 

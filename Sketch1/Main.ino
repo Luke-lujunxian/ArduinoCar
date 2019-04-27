@@ -136,31 +136,34 @@ void loop()
 
 	//±‹’œ
 	//obsoleteAvoid();
-	/*
+	
 	//—’…´µ„
 	if (analogRead(traceReadFront) < black_f - traceError) {
 		move(STOP, 0);
 		taskSelect();
 		pointPass++;
 		if (pointPass == 1) {
-			move(TURNRIGHT, 0.8);
-			while(!digitalRead(traceRight)){}
-			move(TURNRIGHT, 0.5);
-			while (!digitalRead(traceLeft)) {}
+			move(TURNLEFT, 0.8);
+			if (analogRead(traceRight) > 100)
+				delay(1000);
+			while(analogRead(traceRight)<100){}
+			move(TURNLEFT, 0.5);
+			while (analogRead(traceRight)>100) {}
 			move(STOP, 0);
 			move(BACKWARD, 0.7);
 			delay(3000);
 			move(TURNRIGHT, 0.8);
 			delay(2000);
-			while (!digitalRead(traceRight)) {}
+			while (analogRead(traceLeft)<100) {}
 			move(TURNRIGHT, 0.5);
-			while (!digitalRead(traceLeft)) {}
+			while (!analogRead(traceLeft)>100) {}
+			move(STOP, 0);
 		}
 		else if(pointPass == 4){
 			move(STOP,0);
 		}
 	}
-	*/
+	
 	
 }
 

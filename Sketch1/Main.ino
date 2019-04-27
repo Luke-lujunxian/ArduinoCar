@@ -12,7 +12,7 @@
 声明的接口的用途
 uint8_t 用途 + R/W  = 端口名
 */
-uint8_t fireReadFront = A0;//废除
+uint8_t fireReadFront = A0;
 uint8_t fireReadLeft = A2;
 uint8_t fireReadRight = A1;
 uint8_t soundRead = A4;
@@ -20,13 +20,13 @@ uint8_t traceReadFront = A3;
 
 uint8_t echoPing = A5;
 uint8_t echoPong = 4;
-uint8_t traceLeft = A4;//2
-uint8_t traceRight = A0;//3
+uint8_t traceLeft = 2;
+uint8_t traceRight = 3;
 uint8_t LED = echoPong;//共用端口
 uint8_t FAN = soundRead;
 
-uint8_t obstacleReadRight = 12;//5占用
-uint8_t obstacleReadFront = 13;//6占用
+uint8_t obstacleReadRight = 13;//5占用
+uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
 uint8_t ENB = 5;
 uint8_t N1 = 11;
@@ -52,7 +52,6 @@ Servo a;
 
 void setup()
 {	
-	Serial.begin(9600);
 	pinMode(soundRead, INPUT);
 
 	pinMode(LED, OUTPUT);
@@ -93,7 +92,7 @@ void setup()
 			break;
 		}		
 	}
-	//pinMode(FAN, OUTPUT);
+	pinMode(FAN, OUTPUT);
 }
 void loop()
 {	
@@ -114,14 +113,7 @@ void loop()
 	}
 	
 	*/
-	while(true){
-	Serial.print(analogRead(traceReadFront));
-	Serial.print("\t");
-	Serial.print(analogRead(traceLeft));
-	Serial.print("\t");
-	Serial.print(analogRead(traceRight));
-	Serial.println("------------------");
-}
+
 	//循迹
 	if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
 		move(RIGHT, 0.5);
@@ -131,7 +123,7 @@ void loop()
 	}
 	else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
 		//未知情况解决
-		move(STOP, 0);
+		move(BACKWARD, 0);
 	}
 	else {
 		move(FORWARD, 0.8);
@@ -312,9 +304,7 @@ int taskSelect() {
 			break;
 		}
 		default:
-			LEDlight(1);
-			delay(1000);
-			LEDlight(0);
+		
 			break;
 		}
 		out:Serial.println("Time Out!");
@@ -551,7 +541,7 @@ void transport() {
 	}
 }
 
-void LEDlight(bool s) {
+void LEDlight(bool s) {//阻断性
 	if (s) {
 		pinMode(LED, OUTPUT);
 		digitalWrite(LED, HIGH);
@@ -560,5 +550,8 @@ void LEDlight(bool s) {
 		digitalWrite(LED, LOW);
 		pinMode(LED, INPUT);
 	}
+	
+	
+	
 }
 

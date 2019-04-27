@@ -12,16 +12,16 @@
 声明的接口的用途
 uint8_t 用途 + R/W  = 端口名
 */
-uint8_t fireReadFront = A0;
-uint8_t fireReadLeft = A2;
-uint8_t fireReadRight = A1;
-uint8_t soundRead = A4;
-uint8_t traceReadFront = A3; 
+uint8_t fireReadFront = A0;//废弃
+uint8_t fireReadLeft = A1;
+uint8_t fireReadRight = A4;
+uint8_t soundRead = A5;
+uint8_t traceReadFront = A2; 
 
-uint8_t echoPing = A5;
+uint8_t echoPing = soundRead;
 uint8_t echoPong = 4;
-uint8_t traceLeft = 2;
-uint8_t traceRight = 3;
+uint8_t traceLeft = A3;//2
+uint8_t traceRight = A0;
 uint8_t LED = echoPong;//共用端口
 uint8_t FAN = soundRead;
 
@@ -37,7 +37,7 @@ uint8_t hit = echoPong;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
-int fireNoice, soundNoice, black;
+int fireNoice, soundNoice, black_f, black_l, black_r;
 
 int pointPass = 0,linePass=0;//已经过的点数
 int taskList[4] = { -1,-1,-1,-1 };
@@ -48,6 +48,9 @@ const int rotationspeed = 360 / timeFor360;
 int transportpoint;//第几个点遇到木块
 int angle;//每次要转的角度
 int speed;//小车FOWRAD速度为0.8时的速度
+
+const float GLOBALSPEED = 0.8;
+
 Servo a;
 
 void setup()
@@ -56,10 +59,9 @@ void setup()
 
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, HIGH);
-	fireNoice = SensorInitializer(fireReadFront);
-	soundNoice = SensorInitializer(soundRead);
-	black = SensorInitializer(traceReadFront);
-	digitalWrite(LED, LOW);
+	fireNoice = SensorInitializer(fireReadFront,30);
+	soundNoice = SensorInitializer(soundRead,30);
+	
 
 
 	pinMode(echoPong, INPUT);
@@ -84,6 +86,12 @@ void setup()
 	digitalWrite(N3,LOW);
 	digitalWrite(N4, LOW);
 	a.attach(10);
+
+	black_f = SensorInitializer(traceReadFront, 1);
+	//black_l = SensorInitializer(traceLeft, 1);
+	//black_r = SensorInitializer(traceRight, 1);
+	digitalWrite(LED, LOW);
+
 	Serial.println("Ini complete");
 	//声控启动
 	while (true) {
@@ -92,10 +100,19 @@ void setup()
 			break;
 		}		
 	}
-	pinMode(FAN, OUTPUT);
+	//pinMode(FAN, OUTPUT);
 }
 void loop()
 {	
+	while (false) {
+		Serial.print(analogRead(traceReadFront));
+		Serial.print("\t");
+		Serial.print(analogRead(traceLeft));
+		Serial.print("\t");
+		Serial.print(analogRead(traceRight));
+		Serial.println("------------------");
+		delay(100);
+	}
 	/*
 	声音传感器测试
 	if(analogRead(A0) - average >= 10 || analogRead(A0) - average <= -10)
@@ -118,10 +135,10 @@ void loop()
 	findtrace();
 
 	//避障
-	obsoleteAvoid();
-
+	//obsoleteAvoid();
+	/*
 	//颜色点
-	if (analogRead(traceReadFront) < black - traceError) {
+	if (analogRead(traceReadFront) < black_f - traceError) {
 		move(STOP, 0);
 		taskSelect();
 		pointPass++;
@@ -143,12 +160,13 @@ void loop()
 			move(STOP,0);
 		}
 	}
+	*/
 	
 }
 
-int SensorInitializer(uint8_t port) {
+int SensorInitializer(uint8_t port , int ms100) {
  	unsigned int value = 0;
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < ms100; i++)
 	{
 		value += analogRead(port);
 		delay(100);
@@ -346,48 +364,48 @@ void move(int h, float speedRate) {
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255));
+		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case RIGHT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255*2/3));
+		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255*2/3 * GLOBALSPEED));
 		break;
 	case LEFT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255*2/3));
-		analogWrite(ENB, (int)(speedRate*255));
+		analogWrite(ENA, (int)(speedRate*255*2/3 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case TURNRIGHT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, LOW);
 		digitalWrite(N4, HIGH);
-		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255));
+		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case TURNLEFT:
 		digitalWrite(N1, HIGH);
 		digitalWrite(N2, LOW);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255));
+		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case BACKWARD:
 		digitalWrite(N1, HIGH);
 		digitalWrite(N2, LOW);
 		digitalWrite(N3, LOW);
 		digitalWrite(N4, HIGH);
-		analogWrite(ENA, (int)(speedRate*255));
-		analogWrite(ENB, (int)(speedRate*255));
+		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case STOP:
 		digitalWrite(N1, LOW);
@@ -400,7 +418,7 @@ void move(int h, float speedRate) {
 }
 
 void obsoleteAvoid() {
-	if (digitalRead(obstacleReadFront) && getDistance() < 10 && digitalRead(traceReadFront)> black - traceError) {
+	if (digitalRead(obstacleReadFront) && getDistance() < 10 && digitalRead(traceReadFront)> black_f - traceError) {
 		time_t temp = time(NULL);
 		int timePass = 0;
 		move(TURNLEFT, 0.8);
@@ -423,7 +441,7 @@ void obsoleteAvoid() {
 		}
 		while (difftime(time(NULL), temp) - turningTime * 2 < fowTime) {
 			move(FORWARD, 0.8);
-			if (analogRead(traceReadFront) < black - traceError) {
+			if (analogRead(traceReadFront) < black_f - traceError) {
 				move(TURNLEFT, 0.8);
 				break;
 			}
@@ -496,18 +514,21 @@ void LEDlight(bool s) {//阻断性
 }
 
 void findtrace() {
-	if (!digitalRead(traceLeft) && digitalRead(traceRight)) {
-		move(RIGHT, 0.5);
+	bool left, right;
+	left = analogRead(traceLeft) >= 100;
+	right = analogRead(traceRight) >= 100;
+	if (!left && right) {
+		move(TURNLEFT, 0.4);
 	}
-	else if (digitalRead(traceLeft) && !digitalRead(traceRight)) {
-		move(LEFT, 0.5);
+	else if (left && !right) {
+		move(TURNRIGHT, 0.4);
 	}
-	else if (!digitalRead(traceLeft) && !digitalRead(traceRight)) {
-		//未知情况解决
-		move(BACKWARD, 0);
+	else if (!left && !right) {
+		move(FORWARD, 0.8);
 	}
 	else {
-		move(FORWARD, 0.8);
+		//未知情况解决
+		move(BACKWARD, 0);
 	}
 }
 

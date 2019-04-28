@@ -37,7 +37,7 @@ uint8_t hit = echoPong;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
-int fireNoice, soundNoice, black_f, black_l, black_r;
+int fireNoice, soundNoice, black_f=100, black_l, black_r;
 
 int pointPass = 0,linePass=0;//已经过的点数
 int taskList[4] = { -1,-1,-1,-1 };
@@ -138,10 +138,13 @@ void loop()
 	//obsoleteAvoid();
 	
 	//颜色点
-	if (analogRead(traceReadFront) < black_f - traceError) {
+	if (analogRead(traceReadFront) < black_f ) {
 		move(STOP, 0);
+		delay(1000);
 		taskSelect();
 		pointPass++;
+		if (digitalRead(obstacleReadFront) == 1)
+			transportpoint = pointPass;
 		if (pointPass == 1) {
 			move(TURNLEFT, 0.8);
 			if (analogRead(traceRight) > 100)
@@ -160,7 +163,8 @@ void loop()
 			move(STOP, 0);
 		}
 		else if(pointPass == 4){
-			move(STOP,0);
+			if (digitalRead(obstacleReadFront) == 1)
+				transport();
 		}
 	}
 	
@@ -263,9 +267,9 @@ int taskSelect() {
 			while (true) {
 				if (getDistance() == 50)
 					move(TURNLEFT, 0.5);
-				if (traceLeft == BLACK) {
+				if (digitalRead(traceLeft)>100) {
 					delay(1);
-					if (traceLeft == WHITE) {
+					if (digitalRead(traceLeft)<100) {
 						linePass++;
 					}
 				}
@@ -290,9 +294,9 @@ int taskSelect() {
 			while (true) {
 				if (getDistance() == 50)
 					move(TURNLEFT, 0.5);
-				if (traceLeft == BLACK) {
+				if (digitalRead(traceLeft)>100) {
 					delay(1);
-					if (traceLeft == WHITE) {
+					if (digitalRead(traceLeft) < 100) {
 						linePass++;
 					}
 				}
@@ -355,7 +359,7 @@ void reset(int h/*,int time*/) {//h表示之前小车向左还是向右
 		int state1=digitalRead(trace);
 		move(movedirection, 0.8);
 		delay(10);
-		if (digitalRead(trace) - state1 == WHITE - BLACK) 
+		if (digitalRead(trace) - state1 <0) 
 			--linePass;
 	}
 	
@@ -377,14 +381,14 @@ void move(int h, float speedRate) {
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
 		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
-		analogWrite(ENB, (int)(speedRate*255*0.85 * GLOBALSPEED));
+		analogWrite(ENB, (int)(speedRate*255*0.83* GLOBALSPEED));
 		break;
 	case LEFT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255*0.85 * GLOBALSPEED));
+		analogWrite(ENA, (int)(speedRate*255*0.83 * GLOBALSPEED));
 		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case TURNRIGHT:
@@ -471,8 +475,8 @@ void transport() {
 		move(TURNRIGHT, 0.5);
 		delay(100);
 		while (true) {
-			if(digitalRead(traceLeft)==BLACK)
-				if (digitalRead(traceLeft) == WHITE) {
+			if(digitalRead(traceLeft)>100)
+				if (digitalRead(traceLeft) <100) {
 					move(STOP, 0);
 					return;
 				}
@@ -495,8 +499,8 @@ void transport() {
 		}
 		move(TURNRIGHT, 0.5);
 		delay(timeFor360/2);
-		if (digitalRead(traceLeft) == BLACK)
-			if(digitalRead(traceLeft)==WHITE)
+		if (digitalRead(traceLeft) >100)
+			if(digitalRead(traceLeft)<100)
 				move(STOP, 0);
 	}
 }
@@ -520,13 +524,13 @@ void findtrace() {
 	left = analogRead(traceLeft) >= 100;
 	right = analogRead(traceRight) >= 100;
 	if (!left && right) {
-		move(TURNLEFT, 0.4);
-	}
-	else if (left && !right) {
 		move(TURNRIGHT, 0.4);
 	}
+	else if (left && !right) {
+		move(TURNLEFT, 0.4);
+	}
 	else if (!left && !right) {
-		move(FORWARD, 0.8);
+		move(FORWARD, 0.5);
 	}
 	else {
 		//未知情况解决

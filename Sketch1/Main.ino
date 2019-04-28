@@ -23,7 +23,7 @@ uint8_t echoPong = 4;
 uint8_t traceLeft = A3;//2
 uint8_t traceRight = A0;
 uint8_t LED = echoPong;//共用端口
-uint8_t FAN = soundRead;
+uint8_t FAN = 10;
 
 uint8_t obstacleReadRight = 13;//5占用
 uint8_t obstacleReadFront = 12;//6占用
@@ -33,7 +33,7 @@ uint8_t N1 = 11;
 uint8_t N2 = 9;
 uint8_t N3 = 8;
 uint8_t N4 = 7;
-uint8_t hit = echoPong;
+//uint8_t hit = echoPong;
 
 const int FORWARD = 0, LEFT = 1, RIGHT = 2, BACKWARD = 3, TURNLEFT = 4, TURNRIGHT = 5,STOP=6;
 const int WHITE, BLACK;
@@ -85,9 +85,9 @@ void setup()
 	digitalWrite(N2, LOW);
 	digitalWrite(N3,LOW);
 	digitalWrite(N4, LOW);
-	a.attach(10);
+	//a.attach(10);
 
-	black_f = SensorInitializer(traceReadFront, 1);
+	//black_f = SensorInitializer(traceReadFront, 10);
 	//black_l = SensorInitializer(traceLeft, 1);
 	//black_r = SensorInitializer(traceRight, 1);
 	digitalWrite(LED, LOW);
@@ -135,10 +135,12 @@ void loop()
 	findtrace();
 
 	//避障
-	//obsoleteAvoid();
+
+	obsoleteAvoid();
 	
 	//颜色点
-	if (analogRead(traceReadFront) < black_f ) {
+	if (analogRead(traceReadFront) < black_f && analogRead(traceLeft) < black_f && analogRead(traceRight) < black_f) {
+		LEDlight(1);
 		move(STOP, 0);
 		delay(1000);
 		taskSelect();
@@ -308,7 +310,7 @@ int taskSelect() {
 			move(STOP, 0);
 			for (int i = 0; i < 180; i += 30) {
 				a.write(i);
-				if (digitalRead(hit) == 1) break;
+				//if (digitalRead(hit) == 1) break;
 			}
 			move(BACKWARD, 0.3);
 			while (getDistance() < previousdistance);
@@ -426,7 +428,7 @@ void move(int h, float speedRate) {
 }
 
 void obsoleteAvoid() {
-	if (digitalRead(obstacleReadFront) && getDistance() < 10 && digitalRead(traceReadFront)> black_f - traceError) {
+	if (digitalRead(obstacleReadFront) && getDistance() < 10 && digitalRead(traceReadFront)> black_f ) {
 		time_t temp = time(NULL);
 		int timePass = 0;
 		move(TURNLEFT, 0.8);
@@ -524,17 +526,17 @@ void findtrace() {
 	left = analogRead(traceLeft) >= 100;
 	right = analogRead(traceRight) >= 100;
 	if (!left && right) {
-		move(TURNRIGHT, 0.4);
+		move(TURNLEFT, 0.4);
 	}
 	else if (left && !right) {
-		move(TURNLEFT, 0.4);
+		move(TURNRIGHT, 0.4);
 	}
 	else if (!left && !right) {
 		move(FORWARD, 0.5);
 	}
 	else {
 		//未知情况解决
-		move(BACKWARD, 0);
+		move(STOP, 0);
 	}
 }
 

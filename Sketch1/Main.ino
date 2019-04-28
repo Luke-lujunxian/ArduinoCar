@@ -101,6 +101,22 @@ void setup()
 		}		
 	}
 	//pinMode(FAN, OUTPUT);
+	if (false) {//Æô¶¯½×¶Î
+		move(FORWARD, 0.8);
+		for (int i = 0; i < 2; ) {
+			if (analogRead(traceReadFront) > 100) {
+				i++;
+				while (analogRead(traceReadFront) > 100 && i == 1) {}
+			}
+		}
+		move(STOP,1);
+		delay(500);
+		move(TURNLEFT, 0.8);
+		while(analogRead(traceReadFront) < 100){}
+		move(TURNLEFT, 0.5);
+		while(analogRead(traceReadFront) > 100){}
+		move(STOP, 0);
+	}
 }
 void loop()
 {	

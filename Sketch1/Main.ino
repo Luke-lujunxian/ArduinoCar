@@ -16,15 +16,15 @@ uint8_t fireReadFront = A0;//废弃
 uint8_t fireReadLeft = A1;
 uint8_t fireReadRight = A4;
 uint8_t soundRead = A5;
-uint8_t traceReadFront = A2; 
+uint8_t traceReadFront = A3; 
 
 uint8_t echoPing = soundRead;
 uint8_t echoPong = 4;
 uint8_t traceLeft = A3;//2
-uint8_t traceRight = A0;
+uint8_t traceRight = traceReadFront;
 uint8_t LED = echoPong;//共用端口
 uint8_t FAN = 10;
-
+int hhh=0;
 uint8_t obstacleReadRight = 13;//5占用
 uint8_t obstacleReadFront = 12;//6占用
 uint8_t ENA = 6;
@@ -100,10 +100,16 @@ void setup()
 			break;
 		}		
 	}
+	
 	//pinMode(FAN, OUTPUT);
 }
 void loop()
 {	
+	if (hhh == 0) {
+		move(BACKWARD, 0.8);
+		delay(2000);
+	}
+	hhh++;
 	while (false) {
 		Serial.print(analogRead(traceReadFront));
 		Serial.print("\t");
@@ -130,24 +136,40 @@ void loop()
 	}
 	
 	*/
-
+	
 	//循迹
 	findtrace();
 
 	//避障
 
-	obsoleteAvoid();
+	//obsoleteAvoid();
 	
 	//颜色点
-	if (analogRead(traceReadFront) < black_f && analogRead(traceLeft) < black_f && analogRead(traceRight) < black_f) {
+	if (analogRead(traceReadFront) < black_f && analogRead(traceLeft) < black_f && analogRead(traceRight) < black_f && false) {
+
 		LEDlight(1);
 		move(STOP, 0);
 		delay(1000);
 		taskSelect();
 		pointPass++;
+		LEDlight(0);
 		if (digitalRead(obstacleReadFront) == 1)
 			transportpoint = pointPass;
 		if (pointPass == 1) {
+			
+			LEDlight(1);
+			move(TURNLEFT, 0.5);
+			delay(200);
+			while(analogRead(traceRight) < 100);
+			LEDlight(0);
+			move(BACKWARD, 0.5);
+			delay(1000);
+			move(TURNRIGHT,0.5);
+			delay(200);
+			while (analogRead(traceLeft) < 100) ;
+			move(STOP, 0);
+			
+			/*
 			move(TURNLEFT, 0.8);
 			if (analogRead(traceRight) > 100)
 				delay(1000);
@@ -156,18 +178,20 @@ void loop()
 			while (analogRead(traceRight)>100) {}
 			move(STOP, 0);
 			move(BACKWARD, 0.7);
-			delay(3000);
+			delay(1000);
 			move(TURNRIGHT, 0.8);
-			delay(2000);
+			delay(1000);
 			while (analogRead(traceLeft)<100) {}
 			move(TURNRIGHT, 0.5);
 			while (!analogRead(traceLeft)>100) {}
 			move(STOP, 0);
+			*/
 		}
 		else if(pointPass == 4){
 			if (digitalRead(obstacleReadFront) == 1)
 				transport();
 		}
+		LEDlight(1);
 	}
 	
 	
@@ -383,14 +407,14 @@ void move(int h, float speedRate) {
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
 		analogWrite(ENA, (int)(speedRate*255 * GLOBALSPEED));
-		analogWrite(ENB, (int)(speedRate*255*0.83* GLOBALSPEED));
+		analogWrite(ENB, 0);
 		break;
 	case LEFT:
 		digitalWrite(N1, LOW);
 		digitalWrite(N2, HIGH);
 		digitalWrite(N3, HIGH);
 		digitalWrite(N4, LOW);
-		analogWrite(ENA, (int)(speedRate*255*0.83 * GLOBALSPEED));
+		analogWrite(ENA, 0);
 		analogWrite(ENB, (int)(speedRate*255 * GLOBALSPEED));
 		break;
 	case TURNRIGHT:
@@ -526,17 +550,16 @@ void findtrace() {
 	left = analogRead(traceLeft) >= 100;
 	right = analogRead(traceRight) >= 100;
 	if (!left && right) {
-		move(TURNLEFT, 0.4);
+		move(TURNLEFT, 0.8);
+		delay(10);
 	}
 	else if (left && !right) {
-		move(TURNRIGHT, 0.4);
-	}
-	else if (!left && !right) {
-		move(FORWARD, 0.5);
+		move(TURNRIGHT, 0.8);
+		delay(10);
 	}
 	else {
-		//未知情况解决
-		move(STOP, 0);
+		move(BACKWARD, 0.5);
+		delay(10);
 	}
 }
 
